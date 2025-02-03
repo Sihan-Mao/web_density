@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Growth Visualization</title>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet" />
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { width: 100vw; height: 100vh; }
+        #controls { position: absolute; top: 10px; left: 10px; background: white; padding: 10px; }
+        #metrics { position: absolute; top: 50px; left: 10px; background: white; padding: 10px; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="controls">
+        <label>Year: <span id="year-label">1985</span></label>
+        <input type="range" id="year-slider" min="1985" max="2015" step="1" value="1985">
+    </div>
+    <div id="metrics">Metrics will be displayed here.</div>
+
+    <script>
+        fetch('config.json')
+            .then(response => response.json())
+            .then(config => {
+                mapboxgl.accessToken = config.mapbox_token;
+
+                const map = new mapboxgl.Map({
+                    container: 'map',
+                    style: 'mapbox://styles/sihan-mao/ckj80le5k5bgv19mu9sqfwclf',
+                    center: [104.1954, 35.8617],
+                    zoom: 4
+                });
+
+                let currentYear = 1985;
+                let geojsonData = {}; 
+                let metricsData = {}; 
+                let selectedCityCode = null;
+
+                async function loadCityCenters() {
+                    const cityCenters = await fetch('./data/CN_city_2020.geojson').then(res => res.json());
+                    map.addSource('city-centers', {
+                        type: 'geojson',
+                        data: cityCenters
+                    });
+                    map.addLayer({
+                        id: 'city-center-layer',
+                        type: 'circle',
+                        source: 'city-centers',
+                        paint: {
+                            'circle-radius': 5,
+                            'circle-color': '#007cbf'
+                        }
+                    });
+
+                    map.on('click', 'city-center-layer', (e) => {
+                        const city = e.features[0];
+                        selectedCityCode = city.properties.city_code;
+                        loadData(currentYear, selectedCityCode);
+                    });
+                }
+
+                async function loadData(year, cityCode) {
+                    if (!geojsonData[year]) {
+                        geojsonData[year] = {};
+                    }
+                    if (!geojsonData[year][cityCode]) {
+                        geojsonData[year][cityCode] = await fetch(`./data/geojsons/${cityCode}_${year}.geojson`).then(res => res.json());
+                    }
+                    if (!metricsData[year]) {
+                        const metrics = await fetch('./data/metrics/contour_landscape_metrics_bjtj.json').then(res => res.json());
+                        metricsData = metrics;
+                    }
+                    updateMap(year, cityCode);
+                }
+
+                function updateMap(year, cityCode) {
+                    if (map.getSource('city-data')) {
+                        map.getSource('city-data').setData(geojsonData[year][cityCode]);
+                    } else {
+                        map.addSource('city-data', {
+                            type: 'geojson',
+                            data: geojsonData[year][cityCode]
+                        });
+                        map.addLayer({
+                            id: 'city-layer',
+                            type: 'fill',
+                            source: 'city-data',
+                            paint: {
+                                'fill-color': '#ff0000',
+                                'fill-opacity': 0.5
+                            }
+                        });
+                    }
+                    document.getElementById('metrics').innerHTML = JSON.stringify(metricsData[year][cityCode] || {}, null, 2);
+                }
+
+                document.getElementById('year-slider').addEventListener('input', async (event) => {
+                    const selectedYear = event.target.value;
+                    document.getElementById('year-label').innerText = selectedYear;
+                    if (selectedCityCode) {
+                        await loadData(selectedYear, selectedCityCode);
+                    }
+                });
+
+                map.on('load', loadCityCenters);
+            })
+            .catch(error => console.error('Error loading Mapbox token:', error));
+    </script>
+</body>
+</html>
