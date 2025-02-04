@@ -353,6 +353,7 @@ Notes:
                         essential: true, 
                         zoom: 9
                     });
+                    selectedYear = 1985
                     selectedCityCode = 110000
                     selectedCityName = "北京市"
                     await loadData(selectedYear, selectedCityCode);
@@ -366,6 +367,7 @@ Notes:
                         essential: true, 
                         zoom: 9
                     });
+                    selectedYear = 1985
                     selectedCityCode = 120000
                     selectedCityName = "天津市"
                     await loadData(selectedYear, selectedCityCode);
@@ -379,6 +381,7 @@ Notes:
                         essential: true, 
                         zoom: 9
                     });
+                    selectedYear = 1985
                     selectedCityCode = 310000
                     selectedCityName = "上海市"
                     await loadData(selectedYear, selectedCityCode);
@@ -392,6 +395,7 @@ Notes:
                         essential: true, 
                         zoom: 9
                     });
+                    selectedYear = 1985
                     selectedCityCode = 440100
                     selectedCityName = "广州市"
                     await loadData(selectedYear, selectedCityCode);
@@ -405,6 +409,7 @@ Notes:
                         essential: true, 
                         zoom: 9
                     });
+                    selectedYear = 1985
                     selectedCityCode = 420100
                     selectedCityName = "武汉市"
                     await loadData(selectedYear, selectedCityCode);
@@ -418,6 +423,7 @@ Notes:
                         essential: true, 
                         zoom: 9
                     });
+                    selectedYear = 1985
                     selectedCityCode = 510100
                     selectedCityName = "成都市"
                     await loadData(selectedYear, selectedCityCode);
@@ -431,6 +437,7 @@ Notes:
                         essential: true, 
                         zoom: 9
                     });
+                    selectedYear = 1985
                     selectedCityCode = 430100
                     selectedCityName = "长沙市"
                     await loadData(selectedYear, selectedCityCode);
@@ -444,6 +451,7 @@ Notes:
                         essential: true, 
                         zoom: 9
                     });
+                    selectedYear = 1985
                     selectedCityCode = 620100
                     selectedCityName = "兰州市"
                     await loadData(selectedYear, selectedCityCode);
@@ -460,36 +468,53 @@ Notes:
                 });
 
 
-                function updateMetricsDisplay(year, cityCode, cityName) {
-                    const key = `${cityCode}_${year}.geojson`;
-                    const metricsCategories = [
-                        "naive_density",
-                        "experienced_density",
-                        "worldpop_pop",
-                        "disconnection_norm",
-                        "total_area",
-                        "total_perimeter",
-                        "max_batch_compactness",
-                        "edge_density",
-                        "remoteness_index",
-                        "spin_index",
-                        "range_index"
-                    ];
+        function updateMetricsDisplay(year, cityCode, cityName) {
+            const key = `${cityCode}_${year}.geojson`;
+            const metricsCategories = [
+                "naive_density",
+                "experienced_density",
+                "worldpop_pop",
+                "disconnection_norm_contour",
+                "total_area_contour",
+                "total_perimeter_contour",
+                "max_batch_compactness_contour",
+                "edge_density_contour",
+                "remoteness_index_contour",
+                "spin_index_contour",
+                "range_index_contour"
+            ];
 
-                    let metricsHTML = `<h3>Metrics for ${cityName} in ${year}</h3><table>`;
-                    metricsHTML += "<tr><th>Metric</th><th>Value</th></tr>";
+            let metricsHTML = `<h3>Metrics for ${cityName} in ${year}</h3><table>`;
+            metricsHTML += "<tr><th>Metric</th><th>Value</th></tr>";
 
-                    metricsCategories.forEach(metric => {
-                if (metricsData[metric] && metricsData[metric][key] !== undefined) {
-                    metricsHTML += `<tr><td>${metric.replace(/_/g, ' ')}</td><td>${metricsData[metric][key].toFixed(4)}</td></tr>`;
+            metricsCategories.forEach(metric => {
+                // Remove "_contour" from display names if present, then replace remaining underscores with spaces
+                let displayName = metric.replace("_contour", "").replace(/_/g, " ");
+
+                // Safely retrieve the value if it exists
+                const value = metricsData?.[metric]?.[key];
+
+                if (typeof value === "number") {
+                // Special case for worldpop_pop
+                if (metric === "worldpop_pop") {
+                    // Divide by 10000, then convert to integer
+                    const scaledValue = parseInt(value / 10000, 10);
+                    metricsHTML += `<tr><td>${displayName}</td><td>${scaledValue}</td></tr>`;
                 } else {
-                    metricsHTML += `<tr><td>${metric.replace(/_/g, ' ')}</td><td>No data</td></tr>`;
+                    // Otherwise, display the numeric value (e.g., to 4 decimal places)
+                    metricsHTML += `<tr><td>${displayName}</td><td>${value.toFixed(4)}</td></tr>`;
+                }
+                } else {
+                // Fallback if no data
+                metricsHTML += `<tr><td>${displayName}</td><td>No data</td></tr>`;
                 }
             });
-            
+
+
             metricsHTML += "</table>";
             document.getElementById('metrics').innerHTML = metricsHTML;
-        }
+            }
+
 
                 map.on('load', loadCityCenters);
             })
