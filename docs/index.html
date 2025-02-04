@@ -49,7 +49,7 @@ Notes:
       padding: 5px; text-align: left;
     }
     #menu-box {
-      position: absolute; bottom: 80px; right: 65px;
+      position: absolute; bottom: 15px; right: 65px;
       background: rgba(255, 255, 255, 0); padding: 10px; border-radius: 5px;
       box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
 
@@ -71,7 +71,7 @@ Notes:
     }
 
     .mapboxgl-ctrl-geocoder {
-      top: 10px!important;
+      top: -70px!important;
       right: 55px;
       width: 420px!important;
 
@@ -134,27 +134,14 @@ Notes:
 </head>
 <body>
     <div class="header-container">
-        <div class="header1">
-          <a href="https://slab.today">
-            <img
-            src="https://slab.today/wp-content/uploads/new-slab-logo-with-open-fonts1.jpg"
-            />
-          </a>
+
           <div class="title">
             <h1>
-              THE GREAT URBANIZATION<br /><span class="subtitle"
+              MAPPING GEOMETRY<br /><span class="subtitle"
                 >density and geometric changes of modern China</span
               >
             </h1>
           </div>
-          <div class="header1-right">
-            <a
-              href="https://slab.today/2022/10/blacksmhistory-page/"
-              style="color: #070606; font-family: Gill Sans, sans-serif; font-weight: 550"
-              >ABOUT THIS MAP</a
-            >
-          </div>
-        </div>
       </div>
     <div id="map"></div>
     <div id="controls">
@@ -179,8 +166,11 @@ Notes:
 
     <script>
         const colorPalette = [
-            '#8c0000', '#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60',
-            '#1a9850', '#66c2a5', '#3288bd', '#5e4fa2'
+        "#000000", "#050000", "#0a0000", "#0e0000", "#130000", "#180000", "#1d0000",
+        "#220000", "#270000", "#2c0000", "#310000", "#360000", "#3b0000", "#400000",
+        "#440000", "#490000", "#4e0000", "#530000", "#580000", "#5d0000", "#620000",
+        "#670000", "#6c0000", "#710000", "#760000", "#7b0000", "#800000", "#840000",
+        "#890000", "#8e0000", "#8b0000"
         ];
 
         const cityCoordinates = {
@@ -226,7 +216,7 @@ Notes:
                     container: 'map',
                     style: 'mapbox://styles/sihan-mao/ckmwsc18a05fw17lery12fwjq',
                     center: [118.1954, 35.8617],
-                    zoom: 4
+                    zoom: 3.8
                 });
 
                 map.addControl(new mapboxgl.NavigationControl());
@@ -256,9 +246,9 @@ Notes:
                         type: 'circle',
                         source: 'city-centers',
                         paint: {
-                            'circle-radius': 4,
-                            'circle-color': 'grey',
-                            'circle-stroke-width': 1,
+                            'circle-radius': 3,
+                            'circle-color': '#cccccc',
+                            'circle-stroke-width': 2,
                             'circle-stroke-color': 'darkgreen',
                             'circle-opacity': 1
                         }
@@ -272,9 +262,13 @@ Notes:
 
                         console.log(currentYear)
                         loadData(currentYear, selectedCityCode);
-                        if (!selectedYear){
-                            selectedYear = 1985
-                        }
+                        selectedYear = 1985
+
+                        currentYear = 1985;
+                        // 2. Reset the slider
+                        document.getElementById('year-slider').value = currentYear;
+                        // 3. Update the year label
+                        document.getElementById('year-label').innerText = currentYear;
                         
                         updateMetricsDisplay(selectedYear, selectedCityCode, selectedCityName);
                     });
@@ -309,7 +303,7 @@ Notes:
                 }
 
                 function updateMap(year, cityCode) {
-                    const colorIndex = Math.floor((year - 1985) / 3) % colorPalette.length;
+                    const colorIndex = (year - 1985);
                     const color = colorPalette[colorIndex];
                     const layerId = `${cityCode}-layer-${year}`;
                    
@@ -327,7 +321,7 @@ Notes:
                             source: layerId,
                             paint: {
                                 'fill-color': color,
-                                'fill-opacity': 0.1
+                                'fill-opacity': 0.3
                             }
                         });
                     }
@@ -337,7 +331,7 @@ Notes:
 
                 function zoomToCity(coordinates) {
                     map.flyTo({
-                        center: [coordinates[0] + 0.5, coordinates[1] + 0.1],
+                        center: [coordinates[0] + 0.5, coordinates[1]],
                         zoom: 9
                     });
                 }
@@ -355,7 +349,7 @@ Notes:
                 document.getElementById('fly-bj').addEventListener('click', async (event) => {
                     // Fly to BJ button
                     map.flyTo({
-                        center: [cityCoordinates[110000][0] + 0.5,  cityCoordinates[110000][1] + 0.1],
+                        center: [cityCoordinates[110000][0] + 0.5,  cityCoordinates[110000][1]],
                         essential: true, 
                         zoom: 9
                     });
@@ -368,7 +362,7 @@ Notes:
                 document.getElementById('fly-tj').addEventListener('click', async (event) => {
                     // Fly to TJ button
                     map.flyTo({
-                        center: [cityCoordinates[120000][0] + 0.5,  cityCoordinates[120000][1] + 0.1],
+                        center: [cityCoordinates[120000][0] + 0.5,  cityCoordinates[120000][1]],
                         essential: true, 
                         zoom: 9
                     });
@@ -381,7 +375,7 @@ Notes:
                 document.getElementById('fly-sh').addEventListener('click', async (event) => {
                     // Fly to TJ button
                     map.flyTo({
-                        center: [cityCoordinates[310000][0] + 0.5,  cityCoordinates[310000][1] + 0.1],
+                        center: [cityCoordinates[310000][0] + 0.5,  cityCoordinates[310000][1]],
                         essential: true, 
                         zoom: 9
                     });
@@ -394,7 +388,7 @@ Notes:
                 document.getElementById('fly-gz').addEventListener('click', async (event) => {
                     // Fly to TJ button
                     map.flyTo({
-                        center: [cityCoordinates[440100][0] + 0.5,  cityCoordinates[440100][1] + 0.1],
+                        center: [cityCoordinates[440100][0] + 0.5,  cityCoordinates[440100][1]],
                         essential: true, 
                         zoom: 9
                     });
@@ -407,7 +401,7 @@ Notes:
                 document.getElementById('fly-wh').addEventListener('click', async (event) => {
                     // Fly to TJ button
                     map.flyTo({
-                        center: [cityCoordinates[420100][0] + 0.5,  cityCoordinates[420100][1] + 0.1],
+                        center: [cityCoordinates[420100][0] + 0.5,  cityCoordinates[420100][1]],
                         essential: true, 
                         zoom: 9
                     });
@@ -460,7 +454,7 @@ Notes:
                     // Fly to TJ button
                     map.flyTo({
                         center: [118.1954, 35.8617],
-                        zoom: 4,
+                        zoom: 3.7,
                         essential: true
                     });
                 });
@@ -469,6 +463,9 @@ Notes:
                 function updateMetricsDisplay(year, cityCode, cityName) {
                     const key = `${cityCode}_${year}.geojson`;
                     const metricsCategories = [
+                        "naive_density",
+                        "experienced_density",
+                        "worldpop_pop",
                         "disconnection_norm",
                         "total_area",
                         "total_perimeter",
