@@ -14,6 +14,7 @@ Notes:
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet" />
     <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.min.js"></script>
     <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.css" type="text/css" />
@@ -129,6 +130,35 @@ Notes:
         margin-top: -6px; /* Negative margin to reduce the gap further if needed */
         padding: 0;
     }
+    #scatter-plot {
+      position: absolute;
+      top: 170px;
+      /* place it about 350px from right to be to the left of #metrics. 
+         You can adjust these numbers to fit your layout. */
+      right: 440px;  
+      width: 400px;
+      height: 200px;
+      background: rgba(255, 255, 255, 0.491);
+      padding: 10px;
+      display: none;
+      font-family: 'Open Sans', sans-serif;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    }
+
+    #line-plot {
+      position: absolute;
+      top: 170px;
+      /* place it about 350px from right to be to the left of #metrics. 
+         You can adjust these numbers to fit your layout. */
+      right: 440px;  
+      width: 400px;
+      height: 200px;
+      background: rgba(255, 255, 255, 0.491);
+      padding: 10px;
+      display: none;
+      font-family: 'Open Sans', sans-serif;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    }
 
     </style>
 </head>
@@ -162,6 +192,12 @@ Notes:
         <button id="fly-cs">Changsha</button>
         <button id="fly-lz">Lanzhou</button>
         <button id="fly-cn">CHINA</button>
+    </div>
+    <div id="scatter-plot">
+        <canvas id="lineChart" width="180" height="100"></canvas>
+    </div>
+    <div id="line-plot">
+        <canvas id="lineChart" width="180" height="100"></canvas>
     </div>
 
     <script>
@@ -234,6 +270,7 @@ Notes:
                 let geojsonData = {}; 
                 let metricsData = {}; 
                 let selectedCityCode = null;
+                let scatterChart = null;
 
                 async function loadCityCenters() {
                     const cityCenters = await fetch('./data/cn_cityct_2020.geojson').then(res => res.json());
@@ -271,6 +308,9 @@ Notes:
                         document.getElementById('year-label').innerText = currentYear;
                         
                         updateMetricsDisplay(selectedYear, selectedCityCode, selectedCityName);
+                        buildScatterPlot(selectedCityCode);
+
+                        document.querySelector("#scatter-plot").style.display = "block";
                     });
                 }
                 
@@ -361,8 +401,11 @@ Notes:
                     document.getElementById('year-slider').value = currentYear;
                     // 3. Update the year label
                     document.getElementById('year-label').innerText = currentYear;
+
                     await loadData(selectedYear, selectedCityCode);
                     updateMetricsDisplay(selectedYear, selectedCityCode, selectedCityName);
+                    buildScatterPlot(selectedCityCode)
+                    document.querySelector("#scatter-plot").style.display = "block";
                 });
 
                 document.getElementById('fly-tj').addEventListener('click', async (event) => {
@@ -383,6 +426,8 @@ Notes:
 
                     await loadData(selectedYear, selectedCityCode);
                     updateMetricsDisplay(selectedYear, selectedCityCode, selectedCityName);
+                    buildScatterPlot(selectedCityCode)
+                    document.querySelector("#scatter-plot").style.display = "block";
                 });
 
                 document.getElementById('fly-sh').addEventListener('click', async (event) => {
@@ -403,6 +448,8 @@ Notes:
 
                     await loadData(selectedYear, selectedCityCode);
                     updateMetricsDisplay(selectedYear, selectedCityCode, selectedCityName);
+                    buildScatterPlot(selectedCityCode)
+                    document.querySelector("#scatter-plot").style.display = "block";
                 });
 
                 document.getElementById('fly-gz').addEventListener('click', async (event) => {
@@ -423,6 +470,8 @@ Notes:
                     
                     await loadData(selectedYear, selectedCityCode);
                     updateMetricsDisplay(selectedYear, selectedCityCode, selectedCityName);
+                    buildScatterPlot(selectedCityCode)
+                    document.querySelector("#scatter-plot").style.display = "block";
                 });
 
                 document.getElementById('fly-wh').addEventListener('click', async (event) => {
@@ -443,6 +492,8 @@ Notes:
                     
                     await loadData(selectedYear, selectedCityCode);
                     updateMetricsDisplay(selectedYear, selectedCityCode, selectedCityName);
+                    buildScatterPlot(selectedCityCode)
+                    document.querySelector("#scatter-plot").style.display = "block";
                 });
 
                 document.getElementById('fly-cd').addEventListener('click', async (event) => {
@@ -463,6 +514,8 @@ Notes:
                     
                     await loadData(selectedYear, selectedCityCode);
                     updateMetricsDisplay(selectedYear, selectedCityCode, selectedCityName);
+                    buildScatterPlot(selectedCityCode)
+                    document.querySelector("#scatter-plot").style.display = "block";
                 });
 
                 document.getElementById('fly-cs').addEventListener('click', async (event) => {
@@ -483,6 +536,8 @@ Notes:
                     
                     await loadData(selectedYear, selectedCityCode);
                     updateMetricsDisplay(selectedYear, selectedCityCode, selectedCityName);
+                    buildScatterPlot(selectedCityCode)
+                    document.querySelector("#scatter-plot").style.display = "block";
                 });
 
                 document.getElementById('fly-lz').addEventListener('click', async (event) => {
@@ -503,10 +558,14 @@ Notes:
                     
                     await loadData(selectedYear, selectedCityCode);
                     updateMetricsDisplay(selectedYear, selectedCityCode, selectedCityName);
+                    buildScatterPlot(selectedCityCode)
+                    document.querySelector("#scatter-plot").style.display = "block";
                 });
 
                 document.getElementById('fly-cn').addEventListener('click', async (event) => {
+                    document.querySelector("#scatter-plot").style.display = "none";
                     // Fly to TJ button
+                    
                     map.flyTo({
                         center: [118.1954, 35.8617],
                         zoom: 3.7,
@@ -560,8 +619,76 @@ Notes:
 
             metricsHTML += "</table>";
             document.getElementById('metrics').innerHTML = metricsHTML;
+
+        }
+
+        function buildScatterPlot(cityCode) {
+            // If an old chart instance exists, destroy it before creating a new one
+            if (scatterChart) {
+                scatterChart.destroy();
+                scatterChart = null;
             }
 
+            // Collect data points for each year from 2001 to 2015
+            const dataPoints = []; // y-values
+            const yearLabels = []; // x-axis labels
+
+            for (let year = 2001; year <= 2015; year++) {
+                const key = `${cityCode}_${year}.geojson`;
+                const val = metricsData?.max_batch_compactness_contour?.[key];
+                console.log(val)
+                // Always push something to keep the x-axis consistent
+                // If val is a number, use it; otherwise use null (no data)
+                if (typeof val === 'number') {
+                dataPoints.push(val);
+                } else {
+                dataPoints.push(null); // So the chart knows there is no data here
+                }
+                yearLabels.push(year);
+            }
+
+            // Prepare the Chart.js line chart
+            const ctx = document.getElementById("lineChart").getContext("2d");
+            scatterChart = new Chart(ctx, {
+                type: "line",
+                data: {
+                labels: yearLabels,
+                datasets: [
+                    {
+                    label: "disconnection_norm (2001–2015)",
+                    data: dataPoints,              // The Y-values
+                    backgroundColor: "rgba(75, 192, 192, 0.2)",
+                    borderColor: "rgba(75, 192, 192, 1)",
+                    borderWidth: 2,
+                    fill: false,                   // No fill under the line
+                    spanGaps: false                // If null data, breaks the line
+                    }
+                ]
+                },
+                options: {
+                plugins: {
+                    title: {
+                    display: true,
+                    text: "Disconnection Norm Over Time"
+                    }
+                },
+                scales: {
+                    x: {
+                    title: {
+                        display: true,
+                        text: "Year"
+                    }
+                    },
+                    y: {
+                    title: {
+                        display: true,
+                        text: "disconnection_norm"
+                    }
+                    }
+                }
+                }
+            });
+            }
 
                 map.on('load', loadCityCenters);
             })
