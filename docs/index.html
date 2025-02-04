@@ -136,7 +136,7 @@ Notes:
     }
     #scatter-plot {
       position: absolute;
-      top: 250px;
+      top: 150px;
       /* place it about 350px from right to be to the left of #metrics. 
          You can adjust these numbers to fit your layout. */
       right: 440px;  
@@ -151,7 +151,7 @@ Notes:
 
     #line-plot {
       position: absolute;
-      top: 480px;
+      top: 380px;
       /* place it about 350px from right to be to the left of #metrics. 
          You can adjust these numbers to fit your layout. */
       right: 440px;  
@@ -166,7 +166,7 @@ Notes:
 
     #data-info {
       position: absolute;
-      top: 730px; /* 130 + 300 + 20 for a small gap */
+      top: 610px; /* 130 + 300 + 20 for a small gap */
       right: 440px;
       width: 400px;
       /* match the style of #line-plot */
@@ -186,7 +186,7 @@ Notes:
           <div class="title">
             <h1>
               MAPPING GEOMETRY<br /><span class="subtitle"
-                >density and geometric changes of modern China</span
+                >population density and geometric changes of modern China</span
               >
             </h1>
           </div>
@@ -219,11 +219,21 @@ Notes:
     </div>
     <div id="data-info">
         <p style="margin:0;">
-          Urban geometry is calculated from WSF Evolution dataset (1985-2015) 
-          using contour analysis. Geometric metrics calculation follows Harari (2020) and Angel et al.(2010). 
-          Urban population and experienced density calculation follows Duranton and 
-          Puga (2020) using WorldPop data (2001-2018). Naive density data is from 
-          China City Construction Yearbook from 2001 to 2018.
+          Urban geometry refers to the contiguous built-up area expanding outward from city centers.
+        </p>
+        <!-- Blank line between paragraphs -->
+        <br> 
+          <strong>Click on city centroids </strong> or example cities' names to zoom in. Then,
+          use the slider below to observe how a city’s urban geometry evolves each year.
+        </p>
+        <!-- Blank line between paragraphs -->
+        <br>
+        <p style="margin: 0;">
+            Urban geometry is derived from the WSF Evolution dataset (2001–2015) using contour analysis. 
+            The calculation of geometric metrics follows Harari (2020) and Angel et al. (2010). 
+            Urban population and experienced density calculations follow Duranton and Puga (2020) using WorldPop data (2001–2018).
+            Emissions data is sourced from Shan et al. (2018). 
+            Naïve density data is sourced from the China City Construction Yearbook (2001–2018).
         </p>
       </div>
     <script>
@@ -681,7 +691,7 @@ Notes:
 
             for (let year = 2001; year <= 2015; year++) {
                 const key = `${cityCode}_${year}.geojson`;
-                const val = metricsData?.max_batch_compactness_contour?.[key];
+                const val = metricsData?.emi_transport_pc?.[key];
                 console.log(val)
                 // Always push something to keep the x-axis consistent
                 // If val is a number, use it; otherwise use null (no data)
@@ -701,7 +711,7 @@ Notes:
                 labels: yearLabels,
                 datasets: [
                     {
-                    label: "disconnection_norm (2001–2015)",
+                    label: "transport emissions pc (2001–2015)",
                     data: dataPoints,              // The Y-values
                     backgroundColor: "rgba(75, 192, 192, 0.2)",
                     borderColor: "rgba(75, 192, 192, 1)",
@@ -715,7 +725,7 @@ Notes:
                 plugins: {
                     title: {
                     display: true,
-                    text: "Disconnection Norm Over Time"
+                    text: "Transport Emissions pc, log"
                     }
                 },
                 scales: {
@@ -728,7 +738,7 @@ Notes:
                     y: {
                     title: {
                         display: true,
-                        text: "disconnection_norm"
+                        text: "emi_transport_pc"
                     }
                     }
                 }
@@ -783,7 +793,7 @@ Notes:
                 plugins: {
                     title: {
                     display: true,
-                    text: "Naive Density Over Time"
+                    text: "Naive Density Over Time, 10k/km2"
                     }
                 },
                 scales: {
