@@ -16,11 +16,12 @@ Notes:
     <style>
         body { margin: 0; padding: 0; }
         #map { width: 100vw; height: 100vh; }
-        #controls { position: absolute; top: 30px; right: 50px; background: white; padding: 10px; }
-        #metrics { position: absolute; top: 73px; right: 50px; background: white; padding: 10px; }
-        #year-slider { width: 300px; }
-        #year-ticks { display: flex; justify-content: space-between; width: 300px; }
-        #metrics table { width: 100%; border-collapse: collapse; }
+        #controls { width: 300px; position: absolute; top: 30px; right: 50px; background: white; padding: 10px; font-family: 'Open Sans', sans-serif;}
+        #metrics { width: 300px;position: absolute; top: 300px; right: 50px; background: white; padding: 10px;font-family: 'Open Sans', sans-serif; }
+        #year-slider { width: 300px;margin-bottom: 10px; }
+        #year-ticks { display: flex; justify-content: space-between; padding: 0 10px; }
+        #year-ticks span { position: relative; top: -5px; font-size: 12px; }
+        #metrics table { border-collapse: collapse;font-family: 'Open Sans', sans-serif; }
         #metrics td, #metrics th { padding: 5px; text-align: left; }
     </style>
 </head>
@@ -31,7 +32,7 @@ Notes:
         <input type="range" id="year-slider" min="1985" max="2015" step="1" value="1985">
         <div id="year-ticks"></div>
     </div>
-    <div id="metrics" style="top: 90px">Metrics will be displayed here.</div>
+    <div id="metrics" style="top: 130px">Metrics will be displayed here.</div>
 
     <script>
         const colorPalette = [
