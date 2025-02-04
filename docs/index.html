@@ -297,7 +297,7 @@ Notes:
                     if (!metricsData[year]) {
                         const metrics = await fetch('./data/metrics/contour_landscape_metrics_new.json').then(res => res.json());
                         metricsData = metrics;
-                       
+                       console.log(metrics)
                     }
                     updateMap(year, cityCode);
                 }
