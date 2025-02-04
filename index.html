@@ -1,3 +1,10 @@
+<!--
+urban density, geometry, and carbon emissions map
+version 1
+Feb 3, 2025
+Notes:
+- First iteration
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,8 +16,12 @@
     <style>
         body { margin: 0; padding: 0; }
         #map { width: 100vw; height: 100vh; }
-        #controls { position: absolute; top: 10px; left: 10px; background: white; padding: 10px; }
-        #metrics { position: absolute; top: 50px; left: 10px; background: white; padding: 10px; }
+        #controls { position: absolute; top: 30px; right: 50px; background: white; padding: 10px; }
+        #metrics { position: absolute; top: 73px; right: 50px; background: white; padding: 10px; }
+        #year-slider { width: 300px; }
+        #year-ticks { display: flex; justify-content: space-between; width: 300px; }
+        #metrics table { width: 100%; border-collapse: collapse; }
+        #metrics td, #metrics th { padding: 5px; text-align: left; }
     </style>
 </head>
 <body>
@@ -18,10 +29,27 @@
     <div id="controls">
         <label>Year: <span id="year-label">1985</span></label>
         <input type="range" id="year-slider" min="1985" max="2015" step="1" value="1985">
+        <div id="year-ticks"></div>
     </div>
-    <div id="metrics">Metrics will be displayed here.</div>
+    <div id="metrics" style="top: 90px">Metrics will be displayed here.</div>
 
     <script>
+        const colorPalette = [
+            '#8c0000', '#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60',
+            '#1a9850', '#66c2a5', '#3288bd', '#5e4fa2'
+        ];
+        document.addEventListener('DOMContentLoaded', () => {
+            const yearSlider = document.getElementById('year-slider');
+            const yearTicks = document.getElementById('year-ticks');
+            for (let year = 1985; year <= 2015; year += 5) {
+                let tick = document.createElement('span');
+                tick.textContent = year;
+                tick.style.flex = '1';
+                tick.style.textAlign = 'center';
+                yearTicks.appendChild(tick);
+            }
+        });
+
         fetch('config.json')
             .then(response => response.json())
             .then(config => {
@@ -34,13 +62,15 @@
                     zoom: 4
                 });
 
+                map.addControl(new mapboxgl.NavigationControl());
+
                 let currentYear = 1985;
                 let geojsonData = {}; 
                 let metricsData = {}; 
                 let selectedCityCode = null;
 
                 async function loadCityCenters() {
-                    const cityCenters = await fetch('./data/CN_city_2020.geojson').then(res => res.json());
+                    const cityCenters = await fetch('./data/cn_cityct_2020.geojson').then(res => res.json());
                     map.addSource('city-centers', {
                         type: 'geojson',
                         data: cityCenters
@@ -50,15 +80,34 @@
                         type: 'circle',
                         source: 'city-centers',
                         paint: {
-                            'circle-radius': 5,
-                            'circle-color': '#007cbf'
+                            'circle-radius': 4,
+                            'circle-color': 'grey',
+                            'circle-stroke-width': 1,
+                            'circle-stroke-color': 'darkgreen',
+                            'circle-opacity': 1
                         }
                     });
-
                     map.on('click', 'city-center-layer', (e) => {
                         const city = e.features[0];
                         selectedCityCode = city.properties.city_code;
+                        zoomToCity(city.geometry.coordinates);
+                        console.log(`Selected City Code: ${selectedCityCode}`);
+
+                        console.log(currentYear)
                         loadData(currentYear, selectedCityCode);
+                    });
+                }
+                
+                function clearFutureLayers(year) {
+                    map.getStyle().layers.forEach(layer => {
+                        const match = layer.id.match(/(.+)-layer-(\d+)/);
+                        if (match) {
+                            const layerYear = parseInt(match[2]);
+                            if (layerYear > year) {
+                                map.removeLayer(layer.id);
+                                map.removeSource(layer.id);
+                            }
+                        }
                     });
                 }
 
@@ -72,38 +121,81 @@
                     if (!metricsData[year]) {
                         const metrics = await fetch('./data/metrics/contour_landscape_metrics_bjtj.json').then(res => res.json());
                         metricsData = metrics;
+                       
                     }
                     updateMap(year, cityCode);
                 }
 
                 function updateMap(year, cityCode) {
-                    if (map.getSource('city-data')) {
-                        map.getSource('city-data').setData(geojsonData[year][cityCode]);
-                    } else {
-                        map.addSource('city-data', {
+                    const colorIndex = Math.floor((year - 1985) / 3) % colorPalette.length;
+                    const color = colorPalette[colorIndex];
+                    const layerId = `${cityCode}-layer-${year}`;
+                   
+                    console.log(color)
+                    if (!map.getSource(layerId)) {
+                        map.addSource(layerId, {
                             type: 'geojson',
                             data: geojsonData[year][cityCode]
                         });
+                    }
+                    if (!map.getLayer(layerId)) {
                         map.addLayer({
-                            id: 'city-layer',
+                            id: layerId,
                             type: 'fill',
-                            source: 'city-data',
+                            source: layerId,
                             paint: {
-                                'fill-color': '#ff0000',
-                                'fill-opacity': 0.5
+                                'fill-color': color,
+                                'fill-opacity': 0.1
                             }
                         });
                     }
-                    document.getElementById('metrics').innerHTML = JSON.stringify(metricsData[year][cityCode] || {}, null, 2);
+                    
+                    // document.getElementById('metrics').innerHTML = JSON.stringify(metricsData[year][cityCode] || {}, null, 2);
+                }
+
+                function zoomToCity(coordinates) {
+                    map.flyTo({
+                        center: [coordinates[0] + 0.5, coordinates[1] + 0.1],
+                        zoom: 9
+                    });
                 }
 
                 document.getElementById('year-slider').addEventListener('input', async (event) => {
                     const selectedYear = event.target.value;
                     document.getElementById('year-label').innerText = selectedYear;
                     if (selectedCityCode) {
+                        clearFutureLayers(selectedYear);
                         await loadData(selectedYear, selectedCityCode);
+                        updateMetricsDisplay(selectedYear, selectedCityCode);
                     }
                 });
+                function updateMetricsDisplay(year, cityCode) {
+                    const key = `${cityCode}_${year}.geojson`;
+                    const metricsCategories = [
+                        "disconnection_norm",
+                        "total_area",
+                        "total_perimeter",
+                        "max_batch_compactness",
+                        "edge_density",
+                        "remoteness_index",
+                        "spin_index",
+                        "range_index"
+                    ];
+
+                    let metricsHTML = `<h3>Metrics for ${cityCode} in ${year}</h3><table>`;
+                    metricsHTML += "<tr><th>Metric</th><th>Value</th></tr>";
+
+                    metricsCategories.forEach(metric => {
+                if (metricsData[metric] && metricsData[metric][key] !== undefined) {
+                    metricsHTML += `<tr><td>${metric.replace(/_/g, ' ')}</td><td>${metricsData[metric][key].toFixed(4)}</td></tr>`;
+                } else {
+                    metricsHTML += `<tr><td>${metric.replace(/_/g, ' ')}</td><td>No data</td></tr>`;
+                }
+            });
+            
+            metricsHTML += "</table>";
+            document.getElementById('metrics').innerHTML = metricsHTML;
+        }
 
                 map.on('load', loadCityCenters);
             })
