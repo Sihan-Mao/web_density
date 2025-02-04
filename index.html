@@ -11,23 +11,26 @@ Notes:
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>City Growth Visualization</title>
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.min.js"></script>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.css" type="text/css" />
     <style>
    #map { width: 100vw; height: 100vh; }
     #controls {
-      width: 300px;
+      width: 350px;
       position: absolute;
-      top: 30px; right: 50px;
-      background: white; padding: 10px;
+      top: 180px; right: 50px;
+      background: rgba(255, 255, 255, 0.683); padding: 10px;
       font-family: 'Open Sans', sans-serif;
     }
     #metrics {
-      width: 300px;
+      width: 350px;
       position: absolute;
-      top: 130px; right: 50px;
-      background: white; padding: 10px;
+      right: 50px;
+      background: rgba(255, 255, 255, 0.657); padding: 10px;
       font-family: 'Open Sans', sans-serif;
     }
     #year-slider {
@@ -46,30 +49,132 @@ Notes:
       padding: 5px; text-align: left;
     }
     #menu-box {
-      position: absolute; bottom: 10px; right: 10px;
-      background: white; padding: 10px; border-radius: 5px;
+      position: absolute; bottom: 110px; right: 65px;
+      background: rgba(255, 255, 255, 0); padding: 10px; border-radius: 5px;
       box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
-    }
+
+        /* GRID LAYOUT */
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* 4 columns */
+        grid-row-gap: 10px;                    /* space between rows */
+        grid-column-gap: 10px;                 /* space between columns */
+        }
     #menu-box button {
       margin: 5px; padding: 5px 10px; font-size: 14px;
-      cursor: pointer; border: none; background-color: #007bff;
-      color: white; border-radius: 3px;
+      cursor: pointer; border: none; background-color: #eff0f1;
+      color: rgb(21, 20, 20); border-radius: 0px;
+      font-family: 'Open Sans', sans-serif;
     }
+
+    #menu-box button:hover{
+        background-color: rgba(237, 5, 13, 0.05);
+    }
+
+    .mapboxgl-ctrl-geocoder {
+      top: 10px!important;
+      right: 55px;
+      width: 420px!important;
+
+    }
+    .header1 {
+        background-color: white;
+        overflow: hidden;
+        font-family: Gill Sans;
+        box-sizing: border-box;
+        padding: 0.1em 0.4em;
+        color: rgb(235, 233, 233);
+        position: fixed;   /* Add this line */
+        width: 100%;       /* Add this line */
+        z-index: 1;     /* Add this line to ensure the header is above other elements */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        top: 0;
+    }
+    .header1 a {
+        float: left;
+        text-decoration: none;
+        line-height: 0.8em;
+        font-family: "Open Sans", sans-serif;
+        height: 1.6em;
+    }
+    .header1-right {
+        float: right;
+        padding-right: 2em;
+        padding-top: 2.4em;
+        height: 5px;
+    }
+    .title {
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Center align the title and toolbar content */
+    }
+
+    .title h1 {
+        color: #0b0a0a; /* Or any color that matches your design */
+        text-align: center;
+        font-weight: normal; /* Unbold the font */
+        font-size: 28px; /* Set the font size to 28px */
+        font-family: 'Open Sans', sans-serif; /* Set the font-family to Open Sans */
+        text-align: center;
+        margin: 0; /* Keeps the margin to zero */
+        line-height: 1.6; /* Adjust the line height to reduce the gap */
+    }
+
+    .title .subtitle {
+        font-style: italic; /* Make text italic */
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 23px; /* Make text size smaller than the rest of the h1 */
+        display: block; /* Makes the subtitle its own block */
+        margin-top: -6px; /* Negative margin to reduce the gap further if needed */
+        padding: 0;
+    }
+
     </style>
 </head>
 <body>
+    <div class="header-container">
+        <div class="header1">
+          <a href="https://slab.today">
+            <img
+            src="https://slab.today/wp-content/uploads/new-slab-logo-with-open-fonts1.jpg"
+            />
+          </a>
+          <div class="title">
+            <h1>
+              THE GREAT URBANIZATION<br /><span class="subtitle"
+                >density and geometric changes of modern China</span
+              >
+            </h1>
+          </div>
+          <div class="header1-right">
+            <a
+              href="https://slab.today/2022/10/blacksmhistory-page/"
+              style="color: #070606; font-family: Gill Sans, sans-serif; font-weight: 550"
+              >ABOUT THIS MAP</a
+            >
+          </div>
+        </div>
+      </div>
     <div id="map"></div>
     <div id="controls">
         <label>Year: <span id="year-label">1985</span></label>
         <input type="range" id="year-slider" min="1985" max="2015" step="1" value="1985">
         <div id="year-ticks"></div>
     </div>
-    <div id="metrics" style="top: 130px">Metrics will be displayed here.</div>
+    <div id="metrics" style="top: 280px">Metrics will be displayed here.</div>
     <!-- Buttons without inline onClick -->
     <div id="menu-box">
         <!-- Each button gets a class .city-button and a data-city-code attribute -->
         <button id="fly-bj">Beijing</button>
         <button id="fly-tj">Tianjin</button>
+        <button id="fly-sh">Shanghai</button>
+        <button id="fly-gz">Guangzhou</button>
+        <button id="fly-wh">Wuhan</button>
+        <button id="fly-cd">Chengdu</button>
+        <button id="fly-cs">Changsha</button>
+        <button id="fly-lz">Lanzhou</button>
+        <button id="fly-cn">CHINA</button>
     </div>
 
     <script>
@@ -80,8 +185,14 @@ Notes:
 
         const cityCoordinates = {
             110000: [116.4074, 39.9042], // Beijing
-            120000: [117.2008, 39.0842]  // Tianjin
-        };
+            120000: [117.2008, 39.0842], // Tianjin
+            310000: [121.4737, 31.2304], // Shanghai
+            440100: [113.2644, 23.1291], // Guangzhou
+            420100: [114.3055, 30.5928], // Wuhan
+            510100: [104.0665, 30.5728], // Chengdu
+            430100: [112.9388, 28.2278], // Changsha
+            620100: [103.8343, 36.0611] // Lanzhou
+            };
 
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -113,12 +224,21 @@ Notes:
 
                 const map = new mapboxgl.Map({
                     container: 'map',
-                    style: 'mapbox://styles/sihan-mao/ckj80le5k5bgv19mu9sqfwclf',
-                    center: [104.1954, 35.8617],
+                    style: 'mapbox://styles/sihan-mao/ckmwsc18a05fw17lery12fwjq',
+                    center: [118.1954, 35.8617],
                     zoom: 4
                 });
 
                 map.addControl(new mapboxgl.NavigationControl());
+                const geocoder = new MapboxGeocoder({
+                    // Initialize the geocoder
+                    accessToken:config.mapbox_token, // Set the access token
+                    mapboxgl: mapboxgl, // Set the mapbox-gl instance
+                    marker: false // Do not use the default marker style
+                    });
+
+                // Add the geocoder to the map
+                map.addControl(geocoder, 'top-right');
 
                 let currentYear = 1985;
                 let geojsonData = {}; 
@@ -181,7 +301,7 @@ Notes:
                         geojsonData[year][cityCode] = await fetch(`./data/geojsons/${cityCode}_${year}.geojson`).then(res => res.json());
                     }
                     if (!metricsData[year]) {
-                        const metrics = await fetch('./data/metrics/contour_landscape_metrics_bjtj.json').then(res => res.json());
+                        const metrics = await fetch('./data/metrics/contour_landscape_metrics_new.json').then(res => res.json());
                         metricsData = metrics;
                        
                     }
@@ -207,7 +327,7 @@ Notes:
                             source: layerId,
                             paint: {
                                 'fill-color': color,
-                                'fill-opacity': 0.1
+                                'fill-opacity': 0.3
                             }
                         });
                     }
@@ -254,6 +374,84 @@ Notes:
                     });
                     selectedCityCode = 120000
                     selectedCityName = "天津市"
+                    await loadData(selectedYear, selectedCityCode);
+                    updateMetricsDisplay(selectedYear, selectedCityCode, selectedCityName);
+                });
+
+                document.getElementById('fly-sh').addEventListener('click', async (event) => {
+                    // Fly to TJ button
+                    map.flyTo({
+                        center: [cityCoordinates[310000][0] + 0.5,  cityCoordinates[310000][1] + 0.1],
+                        essential: true, 
+                        zoom: 9
+                    });
+                    selectedCityCode = 310000
+                    selectedCityName = "上海市"
+                    await loadData(selectedYear, selectedCityCode);
+                    updateMetricsDisplay(selectedYear, selectedCityCode, selectedCityName);
+                });
+
+                document.getElementById('fly-gz').addEventListener('click', async (event) => {
+                    // Fly to TJ button
+                    map.flyTo({
+                        center: [cityCoordinates[440100][0] + 0.5,  cityCoordinates[440100][1] + 0.1],
+                        essential: true, 
+                        zoom: 9
+                    });
+                    selectedCityCode = 440100
+                    selectedCityName = "广州市"
+                    await loadData(selectedYear, selectedCityCode);
+                    updateMetricsDisplay(selectedYear, selectedCityCode, selectedCityName);
+                });
+
+                document.getElementById('fly-wh').addEventListener('click', async (event) => {
+                    // Fly to TJ button
+                    map.flyTo({
+                        center: [cityCoordinates[420100][0] + 0.5,  cityCoordinates[420100][1] + 0.1],
+                        essential: true, 
+                        zoom: 9
+                    });
+                    selectedCityCode = 420100
+                    selectedCityName = "武汉市"
+                    await loadData(selectedYear, selectedCityCode);
+                    updateMetricsDisplay(selectedYear, selectedCityCode, selectedCityName);
+                });
+
+                document.getElementById('fly-cd').addEventListener('click', async (event) => {
+                    // Fly to TJ button
+                    map.flyTo({
+                        center: [cityCoordinates[510100][0] + 0.5,  cityCoordinates[510100][1] + 0.1],
+                        essential: true, 
+                        zoom: 9
+                    });
+                    selectedCityCode = 510100
+                    selectedCityName = "成都市"
+                    await loadData(selectedYear, selectedCityCode);
+                    updateMetricsDisplay(selectedYear, selectedCityCode, selectedCityName);
+                });
+
+                document.getElementById('fly-cs').addEventListener('click', async (event) => {
+                    // Fly to TJ button
+                    map.flyTo({
+                        center: [cityCoordinates[430100][0] + 0.5,  cityCoordinates[430100][1] + 0.1],
+                        essential: true, 
+                        zoom: 9
+                    });
+                    selectedCityCode = 430100
+                    selectedCityName = "长沙市"
+                    await loadData(selectedYear, selectedCityCode);
+                    updateMetricsDisplay(selectedYear, selectedCityCode, selectedCityName);
+                });
+
+                document.getElementById('fly-lz').addEventListener('click', async (event) => {
+                    // Fly to TJ button
+                    map.flyTo({
+                        center: [cityCoordinates[620100][0] + 0.5,  cityCoordinates[620100][1] + 0.1],
+                        essential: true, 
+                        zoom: 9
+                    });
+                    selectedCityCode = 620100
+                    selectedCityName = "兰州市"
                     await loadData(selectedYear, selectedCityCode);
                     updateMetricsDisplay(selectedYear, selectedCityCode, selectedCityName);
                 });
