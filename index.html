@@ -34,7 +34,7 @@ Notes:
       width: 300px; margin-bottom: 10px;
     }
     #year-ticks {
-      display: flex; justify-content: space-between; padding: 0 10px;
+      display: flex; justify-content: space-between; padding: 0 12px;
     }
     #year-ticks span {
       position: relative; top: -5px; font-size: 12px;
@@ -87,14 +87,23 @@ Notes:
         document.addEventListener('DOMContentLoaded', () => {
             const yearSlider = document.getElementById('year-slider');
             const yearTicks = document.getElementById('year-ticks');
-            for (let year = 1985; year <= 2015; year += 5) {
-                let tick = document.createElement('span');
+
+            // Define the exact years you want to display
+            const years = [1985, 1990, 1995, 2000, 2005, 2010, 2015];
+
+            // Make #year-ticks a flex container that spreads items evenly
+            yearTicks.style.display = 'flex';
+            yearTicks.style.justifyContent = 'space-between';
+
+            // Create a <span> for each year
+            years.forEach(year => {
+                const tick = document.createElement('span');
                 tick.textContent = year;
-                tick.style.flex = '1';
+                // Center each label within its span
                 tick.style.textAlign = 'center';
                 yearTicks.appendChild(tick);
-            }
-        });
+            });
+            });
 
 
         fetch('config.json')
@@ -138,10 +147,16 @@ Notes:
                         const city = e.features[0];
                         selectedCityCode = city.properties.city_code;
                         zoomToCity(city.geometry.coordinates);
+                        selectedCityName = city.properties.city
                         console.log(`Selected City Code: ${selectedCityCode}`);
 
                         console.log(currentYear)
                         loadData(currentYear, selectedCityCode);
+                        if (!selectedYear){
+                            selectedYear = 1985
+                        }
+                        
+                        updateMetricsDisplay(selectedYear, selectedCityCode, selectedCityName);
                     });
                 }
                 
@@ -213,7 +228,7 @@ Notes:
                     if (selectedCityCode) {
                         clearFutureLayers(selectedYear);
                         await loadData(selectedYear, selectedCityCode);
-                        updateMetricsDisplay(selectedYear, selectedCityCode);
+                        updateMetricsDisplay(selectedYear, selectedCityCode, selectedCityName);
                     }
                 });
 
@@ -225,7 +240,9 @@ Notes:
                         zoom: 9
                     });
                     selectedCityCode = 110000
+                    selectedCityName = "北京市"
                     await loadData(selectedYear, selectedCityCode);
+                    updateMetricsDisplay(selectedYear, selectedCityCode, selectedCityName);
                 });
 
                 document.getElementById('fly-tj').addEventListener('click', async (event) => {
@@ -236,11 +253,13 @@ Notes:
                         zoom: 9
                     });
                     selectedCityCode = 120000
+                    selectedCityName = "天津市"
                     await loadData(selectedYear, selectedCityCode);
+                    updateMetricsDisplay(selectedYear, selectedCityCode, selectedCityName);
                 });
 
 
-                function updateMetricsDisplay(year, cityCode) {
+                function updateMetricsDisplay(year, cityCode, cityName) {
                     const key = `${cityCode}_${year}.geojson`;
                     const metricsCategories = [
                         "disconnection_norm",
@@ -253,7 +272,7 @@ Notes:
                         "range_index"
                     ];
 
-                    let metricsHTML = `<h3>Metrics for ${cityCode} in ${year}</h3><table>`;
+                    let metricsHTML = `<h3>Metrics for ${cityName} in ${year}</h3><table>`;
                     metricsHTML += "<tr><th>Metric</th><th>Value</th></tr>";
 
                     metricsCategories.forEach(metric => {
