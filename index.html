@@ -12,17 +12,49 @@ Notes:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>City Growth Visualization</title>
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet" />
     <style>
-        body { margin: 0; padding: 0; }
-        #map { width: 100vw; height: 100vh; }
-        #controls { width: 300px; position: absolute; top: 30px; right: 50px; background: white; padding: 10px; font-family: 'Open Sans', sans-serif;}
-        #metrics { width: 300px;position: absolute; top: 300px; right: 50px; background: white; padding: 10px;font-family: 'Open Sans', sans-serif; }
-        #year-slider { width: 300px;margin-bottom: 10px; }
-        #year-ticks { display: flex; justify-content: space-between; padding: 0 10px; }
-        #year-ticks span { position: relative; top: -5px; font-size: 12px; }
-        #metrics table { border-collapse: collapse;font-family: 'Open Sans', sans-serif; }
-        #metrics td, #metrics th { padding: 5px; text-align: left; }
+   #map { width: 100vw; height: 100vh; }
+    #controls {
+      width: 300px;
+      position: absolute;
+      top: 30px; right: 50px;
+      background: white; padding: 10px;
+      font-family: 'Open Sans', sans-serif;
+    }
+    #metrics {
+      width: 300px;
+      position: absolute;
+      top: 130px; right: 50px;
+      background: white; padding: 10px;
+      font-family: 'Open Sans', sans-serif;
+    }
+    #year-slider {
+      width: 300px; margin-bottom: 10px;
+    }
+    #year-ticks {
+      display: flex; justify-content: space-between; padding: 0 10px;
+    }
+    #year-ticks span {
+      position: relative; top: -5px; font-size: 12px;
+    }
+    #metrics table {
+      border-collapse: collapse; font-family: 'Open Sans', sans-serif;
+    }
+    #metrics td, #metrics th {
+      padding: 5px; text-align: left;
+    }
+    #menu-box {
+      position: absolute; bottom: 10px; right: 10px;
+      background: white; padding: 10px; border-radius: 5px;
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    }
+    #menu-box button {
+      margin: 5px; padding: 5px 10px; font-size: 14px;
+      cursor: pointer; border: none; background-color: #007bff;
+      color: white; border-radius: 3px;
+    }
     </style>
 </head>
 <body>
@@ -33,12 +65,25 @@ Notes:
         <div id="year-ticks"></div>
     </div>
     <div id="metrics" style="top: 130px">Metrics will be displayed here.</div>
+    <!-- Buttons without inline onClick -->
+    <div id="menu-box">
+        <!-- Each button gets a class .city-button and a data-city-code attribute -->
+        <button id="fly-bj">Beijing</button>
+        <button id="fly-tj">Tianjin</button>
+    </div>
 
     <script>
         const colorPalette = [
             '#8c0000', '#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60',
             '#1a9850', '#66c2a5', '#3288bd', '#5e4fa2'
         ];
+
+        const cityCoordinates = {
+            110000: [116.4074, 39.9042], // Beijing
+            120000: [117.2008, 39.0842]  // Tianjin
+        };
+
+
         document.addEventListener('DOMContentLoaded', () => {
             const yearSlider = document.getElementById('year-slider');
             const yearTicks = document.getElementById('year-ticks');
@@ -50,6 +95,7 @@ Notes:
                 yearTicks.appendChild(tick);
             }
         });
+
 
         fetch('config.json')
             .then(response => response.json())
@@ -170,6 +216,30 @@ Notes:
                         updateMetricsDisplay(selectedYear, selectedCityCode);
                     }
                 });
+
+                document.getElementById('fly-bj').addEventListener('click', async (event) => {
+                    // Fly to BJ button
+                    map.flyTo({
+                        center: [cityCoordinates[110000][0] + 0.5,  cityCoordinates[110000][1] + 0.1],
+                        essential: true, 
+                        zoom: 9
+                    });
+                    selectedCityCode = 110000
+                    await loadData(selectedYear, selectedCityCode);
+                });
+
+                document.getElementById('fly-tj').addEventListener('click', async (event) => {
+                    // Fly to TJ button
+                    map.flyTo({
+                        center: [cityCoordinates[120000][0] + 0.5,  cityCoordinates[120000][1] + 0.1],
+                        essential: true, 
+                        zoom: 9
+                    });
+                    selectedCityCode = 120000
+                    await loadData(selectedYear, selectedCityCode);
+                });
+
+
                 function updateMetricsDisplay(year, cityCode) {
                     const key = `${cityCode}_${year}.geojson`;
                     const metricsCategories = [
