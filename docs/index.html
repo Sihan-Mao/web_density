@@ -217,7 +217,7 @@ Notes:
             });
 
 
-        fetch('config.json')
+        fetch('../config.json')
             .then(response => response.json())
             .then(config => {
                 mapboxgl.accessToken = config.mapbox_token;
@@ -246,7 +246,7 @@ Notes:
                 let selectedCityCode = null;
 
                 async function loadCityCenters() {
-                    const cityCenters = await fetch('./data/cn_cityct_2020.geojson').then(res => res.json());
+                    const cityCenters = await fetch('../data/cn_cityct_2020.geojson').then(res => res.json());
                     map.addSource('city-centers', {
                         type: 'geojson',
                         data: cityCenters
@@ -298,10 +298,10 @@ Notes:
                         geojsonData[year] = {};
                     }
                     if (!geojsonData[year][cityCode]) {
-                        geojsonData[year][cityCode] = await fetch(`./data/geojsons/${cityCode}_${year}.geojson`).then(res => res.json());
+                        geojsonData[year][cityCode] = await fetch(`../data/geojsons/${cityCode}_${year}.geojson`).then(res => res.json());
                     }
                     if (!metricsData[year]) {
-                        const metrics = await fetch('./data/metrics/contour_landscape_metrics_new.json').then(res => res.json());
+                        const metrics = await fetch('../data/metrics/contour_landscape_metrics_new.json').then(res => res.json());
                         metricsData = metrics;
                        
                     }
