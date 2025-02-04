@@ -46,6 +46,10 @@ Notes:
     #metrics table {
       border-collapse: collapse; font-family: 'Open Sans', sans-serif;
     }
+    #metrics h3 {
+      font-family: 'Open Sans', sans-serif;
+      margin: 5px;
+    }
     #metrics td, #metrics th {
       padding: 5px; text-align: left;
     }
@@ -138,7 +142,7 @@ Notes:
       right: 440px;  
       width: 400px;
       height: 200px;
-      background: rgba(255, 255, 255, 0.491);
+      background: rgba(255, 255, 255, 0.791);
       padding: 10px;
       display: none;
       font-family: 'Open Sans', sans-serif;
@@ -153,11 +157,25 @@ Notes:
       right: 440px;  
       width: 400px;
       height: 200px;
-      background: rgba(255, 255, 255, 0.491);
+      background: rgba(255, 255, 255, 0.791);
       padding: 10px;
       display: none;
       font-family: 'Open Sans', sans-serif;
       box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    }
+
+    #data-info {
+      position: absolute;
+      top: 730px; /* 130 + 300 + 20 for a small gap */
+      right: 440px;
+      width: 400px;
+      /* match the style of #line-plot */
+      background: rgba(255, 255, 255, 0.96);
+      padding: 10px;
+      font-family: 'Open Sans', sans-serif;
+      font-size: small;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
+      display: block; /* optional: hide until needed */
     }
 
     </style>
@@ -179,7 +197,7 @@ Notes:
         <input type="range" id="year-slider" min="1985" max="2015" step="1" value="1985">
         <div id="year-ticks"></div>
     </div>
-    <div id="metrics" style="top: 260px">Metrics will be displayed here.</div>
+    <div id="metrics" style="top: 280px">Metrics will be displayed here.</div>
     <!-- Buttons without inline onClick -->
     <div id="menu-box">
         <!-- Each button gets a class .city-button and a data-city-code attribute -->
@@ -199,7 +217,15 @@ Notes:
     <div id="line-plot">
         <canvas id="lineChart2" width="180" height="100"></canvas>
     </div>
-
+    <div id="data-info">
+        <p style="margin:0;">
+          Urban geometry is calculated from WSF Evolution dataset (1985-2015) 
+          using contour analysis. Geometric metrics calculation follows Harari (2020) and Angel et al.(2010). 
+          Urban population and experienced density calculation follows Duranton and 
+          Puga (2020) using WorldPop data (2001-2018). Naive density data is from 
+          China City Construction Yearbook from 2001 to 2018.
+        </p>
+      </div>
     <script>
         const colorPalette = [
         "#000000", "#050000", "#0a0000", "#0e0000", "#130000", "#180000", "#1d0000",
